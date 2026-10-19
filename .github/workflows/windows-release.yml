@@ -1,0 +1,62 @@
+name: Windows EXE und Release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Tests und Windows-EXE bauen
+        shell: pwsh
+        run: ./build-windows.ps1
+      - name: Downloadpaket erstellen
+        shell: pwsh
+        run: |
+          $hash = (Get-FileHash dist/Rahmenstudio.exe -Algorithm SHA256).Hash.ToLower()
+          "$hash  Rahmenstudio.exe" | Set-Content dist/SHA256.txt
+          @'
+          Rahmenstudio fuer Windows 10/11 (64 Bit)
+          ZIP entpacken und Rahmenstudio.exe doppelklicken.
+          Der Editor oeffnet sich im Standardbrowser.
+          API-Einstellungen: OpenAI-API-Schluessel fuer die Sitzung hinterlegen.
+          Programm beenden: beendet den lokalen Server.
+          Die EXE ist nicht digital signiert.
+          '@ | Set-Content dist/BITTE-LESEN.txt
+          Compress-Archive -Path dist/Rahmenstudio.exe,dist/SHA256.txt,dist/BITTE-LESEN.txt -DestinationPath dist/Rahmenstudio-Windows.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Rahmenstudio-Windows
+          path: |
+            dist/Rahmenstudio.exe
+            dist/Rahmenstudio-Windows.zip
+            dist/SHA256.txt
+      - name: GitHub-Release veröffentlichen
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          @'
+          Fotoboxrahmen erstellen mit Hintergrundauswahl, Personenvorschau und PNG-Export.
+
+          Windows 10/11 (64 Bit): Rahmenstudio-Windows.zip herunterladen, entpacken und Rahmenstudio.exe doppelklicken. Python muss nicht installiert werden.
+
+          KI-Erstellung benötigt einen eigenen OpenAI-API-Schlüssel und wird separat berechnet. Vorschau und Export funktionieren ohne Schlüssel. Die EXE ist nicht digital signiert.
+          '@ | Set-Content release-notes.txt
+          gh release create "$env:RELEASE_TAG" dist/Rahmenstudio.exe dist/Rahmenstudio-Windows.zip dist/SHA256.txt --title "Rahmenstudio $env:RELEASE_TAG" --notes-file release-notes.txt --verify-tag
+          if ($LASTEXITCODE -ne 0) { throw 'Release konnte nicht veröffentlicht werden.' }
