@@ -38,6 +38,7 @@ function render(exporting=false, target=canvas, composite=false) {
   }
   $('sizeLabel').textContent=`${w} × ${h} px`;
   $('areaValue').textContent=Number($('area').value).toLocaleString('de-DE')+' %';
+  window.refreshManualPrompt?.();
 }
 function update() {
   try {
@@ -49,7 +50,7 @@ $('format').onchange=()=>{if($('format').value!=='custom'){const [w,h]=$('format
 for(const id of ['width','height','area','frameColor','photoColor','transparent']) $(id).addEventListener('input',()=>{if(id==='width'||id==='height')$('format').value='custom';update();});
 document.querySelectorAll('[data-prompt]').forEach(b=>b.onclick=()=>{$('prompt').value=b.dataset.prompt;$('prompt').focus();});
 function imageFrom(src){return new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(Error('Bild konnte nicht gelesen werden.'));im.src=src;});}
-function showReferences(){ $('uploads').replaceChildren();references.forEach((ref,i)=>{const b=document.createElement('button');b.title='Referenz entfernen';b.setAttribute('aria-label',`Referenz ${i+1} entfernen`);const img=document.createElement('img');img.src=ref.url;img.alt=ref.name;b.append(img,document.createTextNode('Entfernen ×'));b.onclick=()=>{references.splice(i,1);showReferences();};$('uploads').append(b);});}
+function showReferences(){ $('uploads').replaceChildren();references.forEach((ref,i)=>{const b=document.createElement('button');b.title='Referenz entfernen';b.setAttribute('aria-label',`Referenz ${i+1} entfernen`);const img=document.createElement('img');img.src=ref.url;img.alt=ref.name;b.append(img,document.createTextNode('Entfernen ×'));b.onclick=()=>{references.splice(i,1);showReferences();window.refreshManualPrompt?.();};$('uploads').append(b);});}
 $('files').onchange=async()=>{
   try{
     const files=[...$('files').files];if(files.length+references.length>4)throw Error('Bitte maximal vier Referenzbilder auswählen.');
@@ -61,19 +62,20 @@ $('files').onchange=async()=>{
       const png=c.toDataURL('image/png');if(png.length>6600000)throw Error('Dieses Bild ist nach der Konvertierung zu groß. Bitte ein kleineres Bild wählen.');
       added.push({name:file.name,url:png,data:png.split(',')[1]});
     }
-    references.push(...added);showReferences();$('message').textContent='Referenzen werden bei der KI-Erstellung an OpenAI gesendet.';
+    references.push(...added);showReferences();window.refreshManualPrompt?.();$('message').textContent=$('creationMode').value==='api'?'Referenzen werden bei der KI-Erstellung an OpenAI gesendet.':'Diese Referenzbilder bitte selbst in ChatGPT anhängen.';
   }catch(e){$('message').textContent=e.message;}finally{$('files').value='';}
 };
 $('generate').onclick=async()=>{
+  if ($('creationMode').value !== 'api') return;
   if(!$('prompt').value.trim()){$('message').textContent='Beschreibe zuerst deinen Wunschrahmen.';$('prompt').focus();return;}
   const button=$('generate');button.disabled=true;button.textContent='✦ Dein Rahmen entsteht …';$('message').textContent='Die Erstellung kann einige Minuten dauern. Die OpenAI-API rechnet sie separat ab.';
   try{
     const response=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:$('prompt').value,hasBackground:!!window.selectedBackground,images:[...(window.selectedBackground?[{data:window.selectedBackgroundData}]:[]),...references.map(({data})=>({data}))]})});
     const result=await response.json();if(!response.ok)throw Error(result.error||'Die Erstellung ist fehlgeschlagen.');
-    artwork=await imageFrom('data:image/png;base64,'+result.image);render();$('message').textContent='Dein KI-Design ist fertig. Du kannst es jetzt als PNG herunterladen.';
+    artwork=await imageFrom('data:image/png;base64,'+result.image);$('frameStatus').textContent='Aktiver Rahmen: mit API erstellt.';render();$('message').textContent='Dein KI-Design ist fertig. Du kannst es jetzt als PNG herunterladen.';
   }catch(e){$('message').textContent=e.message;}finally{button.disabled=false;button.textContent='✦ Mit KI gestalten ↗';}
 };
-$('reset').onclick=()=>{artwork=null;update();};
+$('reset').onclick=()=>{artwork=null;$('frameStatus').textContent='Rahmen zurückgesetzt.';update();};
 async function downloadPNG(composite=false){
   try{
     const out=document.createElement('canvas');render(true,out,composite);

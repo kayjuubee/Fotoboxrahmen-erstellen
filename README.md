@@ -17,6 +17,17 @@ python3 server.py
 
 Die Anwendung läuft auf Port 8000 (änderbar über `PORT`). Für den lokalen Gebrauch im Browser `http://localhost:8000` öffnen. Auf einem extern zugänglichen Server muss vor einer Freigabe eine Zugangskontrolle vorgeschaltet werden, damit Dritte den kostenpflichtigen KI-Endpunkt nicht nutzen können.
 
+## Zwei Erstellungsvarianten
+
+Im Bereich „Dein Design“ unter „Erstellungsvariante“ wählen:
+
+- **Mit API:** Rahmen direkt im Programm erstellen lassen. Benötigt API-Schlüssel und separates OpenAI-API-Guthaben.
+- **Ohne API · manuell mit ChatGPT:** Wunschbeschreibung eingeben, Format und Hintergrund wählen, dann „Anweisung für ChatGPT kopieren“. „ChatGPT öffnen“ öffnet die normale ChatGPT-Website, wo die Anmeldung wie gewohnt erfolgt. Gewählten Hintergrund über „Gewählten Hintergrund speichern“ herunterladen und dort als erstes Bild zusammen mit den weiteren Referenzbildern selbst anhängen. Die erzeugte Grafik herunterladen und über „Fertiges Rahmenbild importieren“ zurück ins Rahmenstudio laden. Es werden in diesem Modus keine Bilderstellungsanfragen an die API gesendet. Die Bildfunktionen und Nutzungslimits des eigenen ChatGPT-Kontos gelten weiterhin.
+
+Der Import ist in beiden Modi verfügbar und unterstützt PNG, JPG und WebP bis 20 MB bzw. 32 Megapixel. Importierte Rahmen werden auf das gewählte Format zugeschnitten; der mittlere Fotobereich wird gemäß den Exporteinstellungen ausgespart. Die gewohnte Vorschau mit Hintergrund und Personen sowie beide PNG-Exporte bleiben verfügbar. Weder ChatGPT-Anmeldung noch Text oder Bilder werden automatisch von der Anwendung an die ChatGPT-Website übertragen.
+
+Vor dem Wechsel zur aktualisierten Windows-EXE im alten Rahmenstudio „Programm beenden“ wählen. Dann die neue EXE starten, damit nicht die alte Anwendung weiterläuft.
+
 ## Bilderstellung
 
 `OPENAI_API_KEY` sicher als Umgebungsvariable des Serverprozesses setzen und den Server neu starten. Schlüssel niemals in Browsercode oder Git speichern. Eine bestehende ChatGPT-Anmeldung bzw. ein ChatGPT-Abonnement ersetzt keinen API-Zugang; API-Bilder werden separat berechnet. Ohne Schlüssel funktionieren Vorschau, Farben, Formate und PNG-Download; die KI-Funktion zeigt einen Einrichtungshinweis.

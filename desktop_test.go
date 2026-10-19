@@ -27,7 +27,7 @@ func request(a *editor, method, path, body string, headers map[string]string) *h
 }
 func TestDesktopAssetsAndSettings(t *testing.T) {
 	a := appForTest()
-	for _, path := range []string{"/", "/app.js", "/scene.js", "/desktop.js", "/style.css"} {
+	for _, path := range []string{"/", "/app.js", "/scene.js", "/desktop.js", "/manual.js", "/style.css"} {
 		if w := request(a, "GET", path, "", nil); w.Code != 200 {
 			t.Fatalf("%s: %d", path, w.Code)
 		}
