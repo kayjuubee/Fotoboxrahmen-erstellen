@@ -1,5 +1,11 @@
 # Fotoboxrahmen erstellen
 
+## Windows: direkt herunterladen
+
+**[Rahmenstudio.exe herunterladen](https://github.com/kayjuubee/Fotoboxrahmen-erstellen/raw/refs/heads/main/Rahmenstudio.exe)**
+
+Die fertige EXE liegt zusätzlich direkt im Repository. Alternativ „Code → Download ZIP“ verwenden, alles entpacken und `Rahmenstudio.exe` im Projektordner doppelklicken. Dafür ist kein GitHub-Release erforderlich. Windows 10/11 (64 Bit); die EXE ist unsigniert.
+
 Deutschsprachiger Browser-Editor mit Formatwahl, Referenzbildern, OpenAI-Bilderstellung und PNG-Export. Python 3.10 oder neuer genügt; keine zusätzlichen Pakete nötig.
 
 ## Start
